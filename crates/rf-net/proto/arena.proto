@@ -1,0 +1,214 @@
+syntax = "proto3";
+package rustforge.arena;
+
+message Vec3 {
+  float x = 1;
+  float y = 2;
+  float z = 3;
+}
+
+message JoinRequest {
+  string player_name = 1;
+}
+
+message JoinResponse {
+  uint32 player_id = 1;
+  bool accepted = 2;
+  string reject_reason = 3;
+  // Opaque, server-generated credential for this connection. Every
+  // subsequent PlayerInput must carry it; the server resolves the
+  // acting player from this token, never from the client-claimed
+  // `player_id` field, so one client can't spoof inputs for another
+  // player's id.
+  uint64 session_token = 4;
+}
+
+// One frame of a client's intent. Sent continuously over the
+// bidirectional `StreamGame` call once joined.
+message PlayerInput {
+  uint32 player_id = 1;
+  float move_x = 2;
+  float move_y = 3;
+  float yaw = 4;
+  float pitch = 5;
+  bool jump = 6;
+  bool fire = 7;
+  uint32 sequence = 8;
+  // Set for exactly one tick when the player toggles ready in the lobby.
+  bool toggle_ready = 9;
+  // Set for exactly one tick to drop/throw the currently held item.
+  bool use_item = 10;
+  // Must match the token issued in this connection's `JoinResponse`.
+  // The server identifies the acting player from this, not from
+  // `player_id` above (which is client-supplied and untrusted).
+  uint64 session_token = 11;
+  // Ability triggers, each set for exactly one tick. Ignored by the
+  // server unless the ability is both unlocked (kill milestone reached)
+  // and off cooldown.
+  bool ability_dash = 12;
+  bool ability_superspeed = 13;
+  bool ability_swap = 14;
+  bool ability_ultimate = 15;
+}
+
+enum MatchPhase {
+  PHASE_LOBBY = 0;    // waiting for all connected players to ready up
+  PHASE_STARTING = 1; // short countdown after everyone is ready
+  PHASE_PLAYING = 2;  // match in progress, capped at 30 minutes
+  PHASE_ENDING = 3;   // results screen, kill-leader declared winner
+}
+
+enum ItemKind {
+  ITEM_NONE = 0;
+  ITEM_HEAL = 1;
+  ITEM_DANCING_CAT = 2;
+}
+
+message PlayerState {
+  uint32 player_id = 1;
+  string name = 2;
+  Vec3 position = 3;
+  float yaw = 4;
+  int32 health = 5;
+  bool alive = 6;
+  uint32 kills = 7;
+  uint32 deaths = 8;
+  // Visual scale multiplier -- 1.0 normally, boosted during the "giant
+  // mode" random event.
+  float scale = 9;
+  bool ready = 10;
+  ItemKind held_item = 11;
+  // Set for exactly the tick the player died, so clients can trigger a
+  // one-shot death animation instead of polling `alive`.
+  bool just_died = 12;
+  // Seconds until this player respawns; 0 while alive. Authoritative --
+  // clients only display it, never compute their own countdown.
+  float respawn_time_remaining = 13;
+  // Ability cooldowns remaining, in seconds (0 = ready). Abilities unlock
+  // progressively every 5 kills -- dash at 5, superspeed at 10, swap at
+  // 15, the ultimate at 20 -- which clients derive from `kills` rather
+  // than needing a separate replicated flag.
+  float dash_cooldown_remaining = 14;
+  float superspeed_cooldown_remaining = 15;
+  float swap_cooldown_remaining = 16;
+  float ultimate_cooldown_remaining = 17;
+}
+
+enum PowerupKind {
+  POWERUP_HEALTH = 0;
+  POWERUP_SPEED = 1;
+  POWERUP_DAMAGE = 2;
+}
+
+message PowerupState {
+  uint32 powerup_id = 1;
+  PowerupKind kind = 2;
+  Vec3 position = 3;
+  bool active = 4;
+}
+
+// A point of interest generated at match start (a named landmark/loot
+// area); replicated once so clients can build the same POI props.
+message PointOfInterest {
+  uint32 poi_id = 1;
+  string name = 2;
+  Vec3 position = 3;
+  float radius = 4;
+}
+
+// A world item pickup/throwable, e.g. a dropped heal or the dancing cat.
+message ItemState {
+  uint32 item_id = 1;
+  ItemKind kind = 2;
+  Vec3 position = 3;
+  bool held = 4;
+  uint32 holder_id = 5;
+  // Only meaningful for the dancing cat: true while it's actively
+  // performing its dance at its current position.
+  bool dancing = 6;
+  // False while consumed/awaiting respawn (heal items) or not yet
+  // dropped anywhere (shouldn't happen, but mirrors PowerupState).
+  bool active = 7;
+}
+
+enum EventKind {
+  EVENT_NONE = 0;
+  EVENT_ORBITAL_STRIKE_WARNING = 1;
+  EVENT_ORBITAL_STRIKE_IMPACT = 2;
+  EVENT_ZERO_GRAVITY_START = 3;
+  EVENT_ZERO_GRAVITY_END = 4;
+  EVENT_GIANT_MODE_START = 5;
+  EVENT_GIANT_MODE_END = 6;
+  EVENT_MATCH_STARTING = 7;
+  EVENT_MATCH_BEGIN = 8;
+  EVENT_MATCH_END = 9;
+  EVENT_CAT_DROPPED = 10;
+  EVENT_CAT_TELEPORTED = 11;
+  EVENT_ABILITY_UNLOCKED = 12;
+  EVENT_ULTIMATE_USED = 13;
+  EVENT_WEATHER_CHANGED = 14;
+  // Fired on every shot (hit or miss) so every client -- not just the
+  // shooter -- can play a muzzle flash and gunshot sound at the right
+  // world position.
+  EVENT_WEAPON_FIRED = 15;
+  EVENT_ABILITY_DASH_USED = 16;
+  EVENT_ABILITY_SUPERSPEED_USED = 17;
+  EVENT_ABILITY_SWAP_USED = 18;
+}
+
+enum WeatherKind {
+  WEATHER_CLEAR = 0;
+  WEATHER_CLOUDY = 1;
+  WEATHER_RAIN = 2;
+  WEATHER_STORM = 3;
+}
+
+// A discrete, notable thing that happened this tick -- clients react to
+// these for toasts/sound cues/visual effects rather than polling state.
+// Every player-caused event (weapon fire, abilities) is broadcast to
+// *all* clients via the shared WorldSnapshot stream, not just the
+// player who caused it -- so gunfire, dashes, and ability effects are
+// seen and heard by everyone, the same way, at the same time.
+message GameEvent {
+  EventKind kind = 1;
+  Vec3 position = 2;
+  float value = 3;
+  // Meaningful for weapon-fire/dash: the direction the shot/dash was
+  // aimed, for orienting client-side VFX.
+  Vec3 direction = 4;
+  // The player who caused this event, if any (0 = none/environmental).
+  uint32 source_player_id = 5;
+}
+
+message WorldSnapshot {
+  repeated PlayerState players = 1;
+  repeated PowerupState powerups = 2;
+  repeated GameEvent events = 3;
+  uint64 tick = 4;
+  float gravity_scale = 5;
+  MatchPhase phase = 6;
+  // Seconds remaining in the current phase (starting countdown, or time
+  // left in the 30-minute match); 0 if not applicable.
+  float phase_time_remaining = 7;
+  repeated PointOfInterest points_of_interest = 8;
+  repeated ItemState items = 9;
+  // Only populated once, when `phase == PHASE_ENDING`.
+  uint32 winner_player_id = 10;
+  string winner_name = 11;
+  // Radians, wraps every full day/night cycle. 0/PI = sunrise/sunset,
+  // PI/2 = midday, 3PI/2 = midnight. Authoritative -- the day/night
+  // cycle only actually advances server-side.
+  float time_of_day = 12;
+  WeatherKind weather = 13;
+  // 0..1 blend into the next weather kind, for smooth transitions
+  // instead of an instant sky/fog snap.
+  float weather_transition = 14;
+}
+
+service ArenaService {
+  // Unary handshake: reserves a player slot and returns its id.
+  rpc Join(JoinRequest) returns (JoinResponse);
+  // Bidirectional stream: client continuously sends inputs, server
+  // continuously streams authoritative world snapshots back.
+  rpc StreamGame(stream PlayerInput) returns (stream WorldSnapshot);
+}

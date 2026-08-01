@@ -1,0 +1,15 @@
+[package]
+name = "rf-assets"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[dependencies]
+image.workspace = true
+gltf.workspace = true
+wgpu.workspace = true
+rf-math.workspace = true
+rf-renderer.workspace = true
+rf-animation.workspace = true
+anyhow.workspace = true
+log.workspace = true

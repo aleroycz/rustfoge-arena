@@ -1,0 +1,28 @@
+[package]
+name = "rf-engine"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[dependencies]
+rf-math.workspace = true
+rf-ecs.workspace = true
+rf-input.workspace = true
+rf-audio.workspace = true
+rf-animation.workspace = true
+rf-physics.workspace = true
+rf-renderer.workspace = true
+rf-assets.workspace = true
+rf-scene.workspace = true
+rf-particles.workspace = true
+rf-weather.workspace = true
+rf-terrain.workspace = true
+rf-ui.workspace = true
+winit.workspace = true
+wgpu.workspace = true
+image.workspace = true
+hecs.workspace = true
+log.workspace = true
+env_logger.workspace = true
+anyhow.workspace = true
+pollster.workspace = true

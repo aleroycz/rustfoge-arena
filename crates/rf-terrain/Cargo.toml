@@ -1,0 +1,15 @@
+[package]
+name = "rf-terrain"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[dependencies]
+rf-math.workspace = true
+rf-renderer.workspace = true
+rf-physics.workspace = true
+rf-ecs.workspace = true
+hecs.workspace = true
+wgpu.workspace = true
+noise.workspace = true
+nalgebra = "0.33"

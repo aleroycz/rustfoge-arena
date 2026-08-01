@@ -1,0 +1,95 @@
+[workspace]
+resolver = "2"
+members = [
+    "crates/rf-math",
+    "crates/rf-ecs",
+    "crates/rf-input",
+    "crates/rf-audio",
+    "crates/rf-animation",
+    "crates/rf-physics",
+    "crates/rf-renderer",
+    "crates/rf-assets",
+    "crates/rf-scene",
+    "crates/rf-engine",
+    "crates/rf-particles",
+    "crates/rf-weather",
+    "crates/rf-terrain",
+    "crates/rf-ui",
+    "crates/rf-net",
+    "games/demo",
+    "games/arena-server",
+    "games/arena-client",
+]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2021"
+license = "AGPL-3.0-or-later"
+authors = ["RustForge Engine Contributors"]
+
+[workspace.dependencies]
+# math / ecs
+glam = { version = "0.29", features = ["bytemuck"] }
+hecs = "0.10"
+
+# windowing / input
+winit = "0.30"
+gilrs = "0.11"
+
+# rendering
+wgpu = "22"
+bytemuck = { version = "1.16", features = ["derive"] }
+pollster = "0.4"
+
+# audio
+rodio = { version = "0.19", default-features = false }
+
+# assets
+image = { version = "0.25", default-features = false, features = ["png", "jpeg"] }
+gltf = { version = "1.4", features = ["extras", "names"] }
+
+# physics
+rapier3d = "0.22"
+
+# misc
+anyhow = "1"
+thiserror = "1"
+log = "0.4"
+env_logger = "0.11"
+rand = { version = "0.8", features = ["small_rng"] }
+noise = "0.9"
+serde = { version = "1", features = ["derive"] }
+toml = "0.8"
+
+# networking
+tokio = { version = "1", features = ["full"] }
+tonic = "0.12"
+tokio-stream = "0.1"
+futures = "0.3"
+
+# internal crates
+rf-math = { path = "crates/rf-math" }
+rf-ecs = { path = "crates/rf-ecs" }
+rf-input = { path = "crates/rf-input" }
+rf-audio = { path = "crates/rf-audio" }
+rf-animation = { path = "crates/rf-animation" }
+rf-physics = { path = "crates/rf-physics" }
+rf-renderer = { path = "crates/rf-renderer" }
+rf-assets = { path = "crates/rf-assets" }
+rf-scene = { path = "crates/rf-scene" }
+rf-engine = { path = "crates/rf-engine" }
+rf-particles = { path = "crates/rf-particles" }
+rf-weather = { path = "crates/rf-weather" }
+rf-terrain = { path = "crates/rf-terrain" }
+rf-ui = { path = "crates/rf-ui" }
+rf-net = { path = "crates/rf-net" }
+
+[profile.dev]
+opt-level = 1
+
+[profile.dev.package."*"]
+opt-level = 3
+
+[profile.release]
+lto = true
+codegen-units = 1

@@ -1,0 +1,27 @@
+[package]
+name = "demo"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[[bin]]
+name = "demo"
+path = "src/main.rs"
+
+[dependencies]
+rf-engine.workspace = true
+rf-math.workspace = true
+rf-ecs.workspace = true
+rf-scene.workspace = true
+rf-physics.workspace = true
+rf-audio.workspace = true
+rf-renderer.workspace = true
+rf-input.workspace = true
+rf-particles.workspace = true
+rf-weather.workspace = true
+rf-terrain.workspace = true
+hecs.workspace = true
+log.workspace = true
+winit.workspace = true
+env_logger.workspace = true
+anyhow.workspace = true

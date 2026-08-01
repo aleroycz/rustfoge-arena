@@ -1,0 +1,28 @@
+[package]
+name = "rf-net"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[dependencies]
+tonic = { version = "0.12", features = ["tls"] }
+prost = "0.13"
+tokio = { version = "1", features = ["full"] }
+tokio-stream = { version = "0.1", features = ["sync"] }
+futures = "0.3"
+rustls = "0.23"
+rustls-pemfile = "2"
+tokio-rustls = "0.26"
+rcgen = "0.13"
+sha2 = "0.10"
+http = "1"
+hyper-util = { version = "0.1", features = ["tokio"] }
+tower = "0.5"
+log = "0.4"
+
+[build-dependencies]
+tonic-build = "0.12"
+protoc-bin-vendored = "3"
+
+[dev-dependencies]
+env_logger = "0.11"

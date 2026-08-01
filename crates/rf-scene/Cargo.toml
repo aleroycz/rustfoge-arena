@@ -1,0 +1,10 @@
+[package]
+name = "rf-scene"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[dependencies]
+rf-math.workspace = true
+rf-ecs.workspace = true
+hecs.workspace = true

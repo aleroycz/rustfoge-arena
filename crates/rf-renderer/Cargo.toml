@@ -1,0 +1,15 @@
+[package]
+name = "rf-renderer"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[dependencies]
+wgpu.workspace = true
+bytemuck.workspace = true
+pollster.workspace = true
+rf-math.workspace = true
+rf-ui.workspace = true
+log.workspace = true
+anyhow.workspace = true
+winit.workspace = true

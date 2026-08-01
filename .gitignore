@@ -1,0 +1,9 @@
+/target
+*.log
+crash.log
+arena_config.txt
+*.exe
+*.zip
+server_cert.pem
+server_key.pem
+trusted_servers.txt

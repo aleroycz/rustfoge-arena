@@ -1,0 +1,31 @@
+[package]
+name = "arena-client"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[[bin]]
+name = "arena-client"
+path = "src/main.rs"
+
+[build-dependencies]
+winres = "0.1"
+
+[dependencies]
+rf-engine.workspace = true
+rf-net.workspace = true
+rf-assets.workspace = true
+rf-math.workspace = true
+rf-ecs.workspace = true
+rf-scene.workspace = true
+rf-physics.workspace = true
+rf-audio.workspace = true
+rf-renderer.workspace = true
+rf-input.workspace = true
+rf-particles.workspace = true
+hecs.workspace = true
+log.workspace = true
+winit.workspace = true
+env_logger.workspace = true
+anyhow.workspace = true
+discord-rich-presence = "1.1.0"
